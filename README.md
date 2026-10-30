@@ -20,6 +20,26 @@ Neither app shares its numbers. A mobile network sees every app's traffic, so it
 | Ride-hailing **Green**, Ride-hailing **Lime** | super-app | Ride · Car · Food · Mart |
 | E-commerce **Orange**, E-commerce **Teal** | marketplace | Fashion · Electronics · Groceries · Home |
 
+## Step zero: from hostnames to sessions
+
+The network never sees "a Food session". It sees a stream of **hostnames** per subscriber: an app's API, image
+CDNs with random names, telemetry, and push, ads, maps and payment hosts that every app shares.
+
+1. **Rules first:** a dictionary of known hosts per app. Simple, but most traffic goes to hosts nobody listed.
+2. **Then embedding:** Word2Vec over each subscriber's host stream (a new "sentence" after 10 minutes of silence).
+   Hosts that **pop up together** land together, so each app's unknown hosts sit next to its known ones and the
+   dictionary grows itself. Shared hosts sit between apps and attach to whichever session they fall inside.
+3. **Sessionize:** a run of one app's events with gaps under 5 minutes is one session.
+
+| | Host dictionary | Embedding |
+|---|---|---|
+| App events attributed | 10% | 65% |
+| Real sessions found | 57% | 99% |
+| …recovered as exactly one session | 53% | 89% |
+| Unknown hosts attributed correctly | n/a | 32 / 32 |
+
+![Sessions from host events](docs/demo-sessions.png)
+
 ## The funnel
 
 ```
@@ -51,10 +71,11 @@ even though single sessions are uncertain. Clients buy the totals.
 
 1. **The city breathes**: 2 km hexes, height = people on the network, over 24 hours
 2. **Find the app users**: per brand, by hour
-3. **Drivers vs customers**: animated driver trips for both ride-hailing brands
-4. **Which service**: Ride / Car / Food / Mart, Fashion / Electronics / …
-5. **Did they order**: users vs users who ordered, plus model quality
-6. **Green vs Lime**: Lime's share of food orders per hex, for any area (BSD by default)
+3. **From hostnames to sessions**: the host embedding and one subscriber's rebuilt sessions
+4. **Drivers vs customers**: animated driver trips for both ride-hailing brands
+5. **Which service**: Ride / Car / Food / Mart, Fashion / Electronics / …
+6. **Did they order**: users vs users who ordered, plus model quality
+7. **Green vs Lime**: Lime's share of food orders per hex, for any area (BSD by default)
 
 ![The city breathes](docs/demo-city.png)
 
@@ -69,7 +90,7 @@ cd ../web && python -m http.server 8000   # open http://localhost:8000
 ## Layout
 
 ```
-omni/        sim.py (hex grid, people, sessions, network features) · model.py (driver, service, order models; export)
+omni/        sim.py (hex grid, people, sessions, network features) · sessionize.py (host embedding, sessions) · model.py (driver, service, order models; export)
 notebooks/   omni_market_intelligence.ipynb, the full walk-through with outputs
 web/         interactive 3D map + data/omni.json
 docs/        figures

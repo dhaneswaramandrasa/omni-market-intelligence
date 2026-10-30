@@ -11,11 +11,11 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
 /* Omni Market Intelligence: 3D hex map of Jabodetabek. Data from data/omni.json, written by notebooks/omni_market_intelligence.ipynb. */
-:root { --bg: #f2f1ec; --panel: rgba(255,255,255,.96); --fg: #1a1a1a; --muted: #666; --ink2: #3d3d3d; --line: #e2e2dc; --accent: #3b3fb6; --soft: #ececf8; --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace; }
+:root { --bg: #0b0d17; --panel: rgba(14,16,28,.86); --fg: #f4f4f8; --muted: #9298b0; --ink2: #c9cbd8; --line: rgba(255,255,255,.12); --accent: #a78bfa; --soft: rgba(167,139,250,.14); --well: rgba(255,255,255,.06); --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace; }
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; background: var(--bg); color: var(--fg); font: 14.5px/1.5 "Archivo", -apple-system, "Helvetica Neue", Arial, sans-serif; overflow: hidden; }
 #map { position: fixed; inset: 0; }
-.panel, .card { position: absolute; z-index: 2; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 10px 30px rgba(20,20,40,.08); overflow: auto; }
+.panel, .card { position: absolute; z-index: 2; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 12px 40px rgba(0,0,0,.45); overflow: auto; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
 .panel { top: 16px; left: 16px; width: 350px; max-height: calc(100% - 32px); padding: 18px 20px 14px; }
 .card { top: 16px; right: 16px; width: 320px; max-height: calc(100% - 110px); padding: 16px 18px 14px; }
 .card:empty { display: none; }
@@ -24,7 +24,7 @@ h1 { font-weight: 800; font-size: 30px; letter-spacing: -0.03em; line-height: 1.
 h1 sup { font: 500 12px var(--mono); color: var(--muted); letter-spacing: 0; vertical-align: 14px; margin-left: 4px; }
 .lede { margin: 10px 0 0; color: var(--ink2); }
 .pill { display: inline-block; margin-top: 10px; font: 500 10.5px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--accent); border: 1.5px solid var(--accent); border-radius: 999px; padding: 2px 9px; }
-.steps { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; margin: 16px 0 0; }
+.steps { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin: 16px 0 0; }
 .steps button { font: 500 10px var(--mono); letter-spacing: .03em; text-transform: uppercase; color: var(--muted); background: none; border: 0; border-top: 3px solid var(--line); padding: 7px 0 0; text-align: left; cursor: pointer; }
 .steps button[aria-current="step"] { color: var(--accent); border-top-color: var(--accent); }
 .steps button.done { border-top-color: #b9bbe6; }
@@ -33,14 +33,14 @@ h1 sup { font: 500 12px var(--mono); color: var(--muted); letter-spacing: 0; ver
 .sec { margin: 14px 0 6px; font: 500 11px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
 .sec small { letter-spacing: 0; text-transform: none; }
 .nav { display: flex; justify-content: space-between; margin-top: 14px; border-top: 1px solid var(--line); padding-top: 10px; }
-button.b, .chips button { font: 600 12.5px "Archivo", sans-serif; color: var(--fg); background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px; cursor: pointer; }
+button.b, .chips button { font: 600 12.5px "Archivo", sans-serif; color: var(--fg); background: var(--well); border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px; cursor: pointer; }
 button.b:hover, .chips button:hover { border-color: var(--accent); color: var(--accent); }
-button.b.go { background: var(--accent); border-color: var(--accent); color: #fff; }
+button.b.go { background: var(--accent); border-color: var(--accent); color: #0b0d17; }
 button.b:disabled { opacity: .35; cursor: default; }
 .chips { display: flex; flex-wrap: wrap; gap: 5px; }
 .chips button { font-size: 12px; padding: 3px 10px; display: inline-flex; gap: 6px; align-items: center; }
 .chips button i { width: 9px; height: 9px; border-radius: 50%; }
-.chips button[aria-pressed="true"] { background: var(--fg); border-color: var(--fg); color: #fff; }
+.chips button[aria-pressed="true"] { background: var(--fg); border-color: var(--fg); color: #0b0d17; }
 .big { font-weight: 800; font-size: 38px; letter-spacing: -0.03em; line-height: 1; font-variant-numeric: tabular-nums; }
 .big small { font-size: 15px; font-weight: 700; margin-left: 2px; }
 .sub { font: 12px var(--mono); color: var(--muted); margin-top: 3px; }
@@ -48,22 +48,22 @@ button.b:disabled { opacity: .35; cursor: default; }
 .funnel div { position: relative; padding: 6px 9px; border-radius: 6px; font-size: 12.5px; color: #fff; font-weight: 600; display: flex; justify-content: space-between; white-space: nowrap; transition: width .6s; min-width: 120px; }
 .funnel b { font: 500 12px var(--mono); }
 .bars { display: grid; grid-template-columns: 100px 1fr 46px; gap: 5px 8px; align-items: center; font-size: 12.5px; }
-.bars .tr { position: relative; height: 9px; background: #f0efec; border-radius: 2px; }
+.bars .tr { position: relative; height: 9px; background: var(--well); border-radius: 2px; }
 .bars .tr b { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 0 3px 3px 0; transition: width .5s; }
 .bars .v { font: 11.5px var(--mono); color: var(--muted); text-align: right; }
 .vs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-.vs > div { border-radius: 10px; padding: 10px 12px; background: #f7f6f2; }
+.vs > div { border-radius: 10px; padding: 10px 12px; background: var(--well); }
 .vs .big { font-size: 32px; }
 .vs span { font: 11px var(--mono); color: var(--muted); }
 .kv { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
-.kv div { background: #f7f6f2; border-radius: 8px; padding: 7px 9px; }
+.kv div { background: var(--well); border-radius: 8px; padding: 7px 9px; }
 .kv b { display: block; font-size: 18px; font-weight: 800; font-variant-numeric: tabular-nums; }
 .kv span { font: 10.5px var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
 .note { font-size: 12px; color: var(--muted); margin: 8px 0 0; }
-select { width: 100%; font: 600 13px "Archivo", sans-serif; padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--fg); }
-.time { position: absolute; z-index: 2; left: 50%; bottom: 18px; transform: translateX(-50%); width: min(520px, calc(100% - 420px)); background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 6px 16px 6px 8px; display: flex; gap: 10px; align-items: center; box-shadow: 0 10px 30px rgba(20,20,40,.08); }
+select { width: 100%; font: 600 13px "Archivo", sans-serif; padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; background: #1a1d2e; color: var(--fg); }
+.time { position: absolute; z-index: 2; left: 50%; bottom: 18px; transform: translateX(-50%); width: min(520px, calc(100% - 420px)); background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 6px 16px 6px 8px; display: flex; gap: 10px; align-items: center; box-shadow: 0 12px 40px rgba(0,0,0,.45); backdrop-filter: blur(10px); }
 .time[hidden] { display: none; }
-.time button { width: 30px; height: 30px; border-radius: 50%; border: 0; background: var(--accent); color: #fff; cursor: pointer; font-size: 12px; flex: none; }
+.time button { width: 30px; height: 30px; border-radius: 50%; border: 0; background: var(--accent); color: #0b0d17; cursor: pointer; font-size: 12px; flex: none; }
 .time input { flex: 1; accent-color: var(--accent); }
 .time b { font: 600 14px var(--mono); min-width: 48px; text-align: right; }
 .foot { margin: 12px 0 0; font-size: 11.5px; color: var(--muted); }
@@ -71,7 +71,7 @@ select { width: 100%; font: 600 13px "Archivo", sans-serif; padding: 6px 8px; bo
 .cities { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 8px; }
 .cities span { font: 500 10.5px var(--mono); letter-spacing: .06em; text-transform: uppercase; border: 1px solid var(--line); border-radius: 999px; padding: 2px 8px; color: var(--muted); }
 .cities span.on { color: var(--accent); border-color: var(--accent); }
-.tt { position: absolute; z-index: 3; pointer-events: none; background: #fff; border-radius: 8px; padding: 6px 10px; font-size: 12.5px; box-shadow: 0 8px 24px rgba(20,20,40,.18); display: none; }
+.tt { position: absolute; z-index: 3; pointer-events: none; background: #1a1d2e; color: var(--fg); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; font-size: 12.5px; box-shadow: 0 8px 24px rgba(20,20,40,.18); display: none; }
 .tt span { display: block; font: 11px var(--mono); color: var(--muted); }
 body.embed .panel, body.embed .card, body.embed .time { display: none; }
 @media (max-width: 860px) {
@@ -80,6 +80,15 @@ body.embed .panel, body.embed .card, body.embed .time { display: none; }
   .card { top: 10px; left: 10px; right: 10px; width: auto; max-height: 26%; padding: 10px 14px; }
   .time { bottom: calc(50% + 10px); width: calc(100% - 20px); }
 }
+.maplibregl-ctrl-group { background: #1a1d2e; } .maplibregl-ctrl-group button + button { border-top-color: rgba(255,255,255,.1); }
+.maplibregl-ctrl-group button .maplibregl-ctrl-icon { filter: invert(1); }
+.maplibregl-ctrl-attrib { background: rgba(14,16,28,.7) !important; color: var(--muted); } .maplibregl-ctrl-attrib a { color: var(--muted); }
+.hostmap svg, .tl svg { display: block; width: 100%; height: auto; }
+.tl text, .hostmap text { font: 9.5px "IBM Plex Mono", monospace; fill: var(--muted); }
+.cmp { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+.cmp div { background: var(--well); border-radius: 8px; padding: 7px 9px; }
+.cmp b { display: block; font-size: 22px; font-weight: 800; }
+.cmp span { font: 10.5px var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
 </style>
 </head>
 <body>
@@ -114,9 +123,12 @@ body.embed .panel, body.embed .card, body.embed .time { display: none; }
   function col(b) { return D.meta.brands[b].color; }
   function rgb(c) { return 'rgb(' + c.join(',') + ')'; }
   function mix(a, b, t) { return [0, 1, 2].map(function (i) { return Math.round(a[i] + (b[i] - a[i]) * t); }); }
-  var LIGHT = [232, 231, 226];
+  var LIGHT = [34, 38, 64];
+  // plasma-like ramp for "everyone on the network"
+  var PLASMA = [[40, 22, 110], [110, 20, 160], [190, 45, 140], [240, 100, 90], [253, 170, 50], [245, 240, 90]];
+  function ramp(t) { t = Math.max(0, Math.min(1, t)) * (PLASMA.length - 1); var i = Math.min(PLASMA.length - 2, Math.floor(t)); return mix(PLASMA[i], PLASMA[i + 1], t - i); }
 
-  var map = new maplibregl.Map({ container: 'map', style: 'https://tiles.openfreemap.org/styles/positron',
+  var map = new maplibregl.Map({ container: 'map', style: 'https://tiles.openfreemap.org/styles/dark',
     center: [106.83, -6.3], zoom: MOBILE ? 8.7 : 9.6, pitch: 50, bearing: -12, attributionControl: { compact: true } });
   var overlay = new deck.MapboxOverlay({ interleaved: true, layers: [] });
   map.addControl(overlay);
@@ -127,9 +139,9 @@ body.embed .panel, body.embed .card, body.embed .time { display: none; }
     for (var i = 0; i < N; i++) out[i] = arr[i * 24 + a] * (1 - t) + arr[i * 24 + b] * t; return out; }
   function view() {
     var st = S.step, B = D.brand[S.brand];
-    if (st === 0) return { v: hourly(D.all, S.hour), c: [59, 63, 182], label: 'people on the network' };
-    if (st === 1 || st === 2) return { v: hourly(B.hour, S.hour), c: col(S.brand), label: D.meta.brands[S.brand].name + ' users this hour' };
-    if (st === 3 || st === 4) { var sv = B.svc[S.svc], k = st === 4 && S.metric === 'txn' ? 1 : 0;
+    if (st === 0) return { v: hourly(D.all, S.hour), c: null, label: 'people on the network' };
+    if (st >= 1 && st <= 3) return { v: hourly(B.hour, S.hour), c: col(S.brand), label: D.meta.brands[S.brand].name + ' users this hour' };
+    if (st === 4 || st === 5) { var sv = B.svc[S.svc], k = st === 5 && S.metric === 'txn' ? 1 : 0;
       return { v: sv[k], c: col(S.brand), label: S.svc + (k ? ' users who ordered today' : ' users today') }; }
     var g = D.brand.green.svc.Food[1], l = D.brand.lime.svc.Food[1], v = new Float32Array(N), share = new Float32Array(N);
     for (var i = 0; i < N; i++) { v[i] = g[i] + l[i]; share[i] = v[i] ? l[i] / v[i] : .5; }
@@ -138,30 +150,31 @@ body.embed .panel, body.embed .card, body.embed .time { display: none; }
   var maxCache = {};
   function layers() {
     var w = view(), key = S.step + S.brand + S.svc + S.metric, mx = 0;
-    if (S.step <= 2) { if (!maxCache[key]) { var src = S.step === 0 ? D.all : D.brand[S.brand].hour; for (var i = 0; i < src.length; i++) if (src[i] > mx) mx = src[i]; maxCache[key] = mx; } mx = maxCache[key]; }
+    if (S.step <= 3) { if (!maxCache[key]) { var src = S.step === 0 ? D.all : D.brand[S.brand].hour; for (var i = 0; i < src.length; i++) if (src[i] > mx) mx = src[i]; maxCache[key] = mx; } mx = maxCache[key]; }
     else for (var j = 0; j < N; j++) if (w.v[j] > mx) mx = w.v[j];
     var data = cells.map(function (c, i) { return { p: c, v: w.v[i], s: w.share ? w.share[i] : 0, i: i }; });
-    var focus = S.step === 5 ? S.area : null;
+    var focus = S.step === 6 ? S.area : null;
     var out = [new deck.ColumnLayer({
       id: 'hex', data: data, diskResolution: 6, radius: 930, angle: 30, extruded: true, pickable: true,
       elevationScale: 1, getPosition: function (d) { return d.p; },
-      getElevation: function (d) { return Math.sqrt(d.v / (mx || 1)) * (S.step === 5 ? 3500 : S.step === 2 ? 1500 : 11000); },
+      getElevation: function (d) { return Math.sqrt(d.v / (mx || 1)) * (S.step === 6 ? 3500 : S.step === 3 ? 1500 : 11000); },
       getFillColor: function (d) {
         var t = Math.sqrt(d.v / (mx || 1)), a = focus && cells[d.i][2] !== focus ? 70 : 235;
-        if (S.step === 5) { var c = d.s >= .5 ? mix(LIGHT, col('lime'), Math.min(1, (d.s - .5) * 4)) : mix(LIGHT, col('green'), Math.min(1, (.5 - d.s) * 4)); return c.concat(d.v ? a : 0); }
-        if (S.step === 2) return mix(LIGHT, w.c, t * .5).concat(70);
-        return mix(LIGHT, w.c, .15 + .85 * t).concat(d.v ? 235 : 0);
+        if (S.step === 6) { var c = d.s >= .5 ? mix(LIGHT, col('lime'), Math.min(1, (d.s - .5) * 4)) : mix(LIGHT, col('green'), Math.min(1, (.5 - d.s) * 4)); return c.concat(d.v ? a : 0); }
+        if (S.step === 3) return mix(LIGHT, w.c, t * .35).concat(90);
+        if (!w.c) return ramp(t).concat(d.v ? 90 + 165 * t : 0);
+        return mix(LIGHT, w.c, .2 + .8 * t).concat(d.v ? 90 + 165 * t : 0);
       },
       updateTriggers: { getElevation: [S.step, S.hour, S.brand, S.svc, S.metric], getFillColor: [S.step, S.hour, S.brand, S.svc, S.metric, S.area] },
-      transitions: { getElevation: S.playing && S.step <= 2 ? 0 : 600 },
+      transitions: { getElevation: S.playing && S.step <= 3 ? 0 : 600 },
       onHover: function (info) { var tt = $('tt'); if (!info.object) { tt.style.display = 'none'; return; }
-        var d = info.object; tt.innerHTML = '<b>' + fmtT(d.v * SC) + '</b> ' + w.label + (S.step === 5 && d.v ? ' · Lime ' + Math.round(d.s * 100) + '%' : '') + '<span>' + cells[d.i][2] + '</span>';
+        var d = info.object; tt.innerHTML = '<b>' + fmtT(d.v * SC) + '</b> ' + w.label + (S.step === 6 && d.v ? ' · Lime ' + Math.round(d.s * 100) + '%' : '') + '<span>' + cells[d.i][2] + '</span>';
         tt.style.display = 'block'; tt.style.left = info.x + 14 + 'px'; tt.style.top = info.y + 10 + 'px'; },
-      onClick: function (info) { if (info.object && S.step === 5) { S.area = cells[info.object.i][2]; renderStep(); draw(); } }
+      onClick: function (info) { if (info.object && S.step === 6) { S.area = cells[info.object.i][2]; renderStep(); draw(); } }
     })];
-    if (S.step === 2) ['green', 'lime'].forEach(function (b) {
+    if (S.step === 3) ['green', 'lime'].forEach(function (b) {
       out.push(new deck.TripsLayer({ id: 'trips-' + b, data: D.trips[b], getPath: function (p) { return p.map(function (q) { return [q[0], q[1]]; }); },
-        getTimestamps: function (p) { return p.map(function (q) { return q[2]; }); }, getColor: col(b), widthMinPixels: 3, opacity: 1,
+        getTimestamps: function (p) { return p.map(function (q) { return q[2]; }); }, getColor: col(b), widthMinPixels: 2.6, opacity: 1, getWidth: 30,
         trailLength: 80, currentTime: S.hour * 60, capRounded: true, jointRounded: true }));
     });
     return out;
@@ -184,6 +197,9 @@ body.embed .panel, body.embed .card, body.embed .time { display: none; }
       card: function () { var b = S.brand, all = 30e6;
         var app = appDau(b);
         return '<p class="kick">Funnel · ' + D.meta.brands[b].name + '</p><div class="funnel"><div style="width:100%;background:#9a9cc9">Telco DAU<b>30M</b></div><div style="width:' + Math.max(40, app / all * 100 * 4) + '%;background:' + rgb(col(b)) + '">App users<b>' + fmtT(app) + '</b></div></div><p class="note">' + Math.round(app / all * 100) + '% of people on the network used ' + D.meta.brands[b].name + ' today.</p><p class="sec">All four brands</p><div class="bars">' + Object.keys(D.meta.brands).map(function (k) { return '<span' + (k === b ? ' style="font-weight:700"' : '') + '>' + D.meta.brands[k].name.split(' ').pop() + '</span><span class="tr"><b style="width:' + appDau(k) / appDau('green') * 90 + '%;background:' + rgb(col(k)) + '"></b></span><span class="v">' + fmtT(appDau(k)) + '</span>'; }).join('') + '</div>'; } },
+    { t: 'Sessions', h: 'From hostnames to sessions', time: true,
+      body: function () { return '<p>The network never sees "a Food order". It sees <b>hostnames</b>: an app\'s API, image CDNs with random names, telemetry, and push, ads and payment hosts that every app shares.</p><p>A dictionary of known hosts misses most of the traffic. So I embedded hosts with <b>Word2Vec</b>: hosts that pop up together belong to the same app, and a burst of them is one session.</p>'; },
+      card: function () { return sessCard(); } },
     { t: 'Drivers', h: 'Drivers vs customers', time: true,
       body: function () { return '<p>Drivers look different on the network: on the road all day, many short sessions, a <b>driver-partner endpoint</b>, dozens of cells. A classifier trained on a labelled panel separates them from customers.</p><p>Lines are simulated driver trips for both ride-hailing brands.</p>'; },
       card: function () { var m = D.meta.metrics.driver; return '<p class="kick">Ride-hailing drivers today</p>' + ['green', 'lime'].map(function (b) { var dr = D.brand[b].n_drivers * SC, app = appDau(b);
@@ -195,13 +211,33 @@ body.embed .panel, body.embed .card, body.embed .time { display: none; }
     { t: 'Orders', h: 'Did they order?', time: false,
       body: function () { return '<p>A third model scores every session: did it end in an order? Signals: a payment endpoint, longer and heavier sessions, a trip right after.</p><p class="sec">Brand</p>' + brandChips(Object.keys(D.meta.brands)) + '<p class="sec">Service</p>' + svcChips() + '<p class="sec">Show</p><div class="chips" id="mchips"><button type="button" data-m="act" aria-pressed="' + (S.metric === 'act') + '">Users</button><button type="button" data-m="txn" aria-pressed="' + (S.metric === 'txn') + '">Users who ordered</button></div>'; },
       card: function () { var m = D.meta.metrics.txn; return svcCard(1) + '<p class="sec">Order model, held-out panel</p><div class="kv"><div><b>' + m.auc.toFixed(2) + '</b><span>AUC</span></div><div><b>' + m.precision.toFixed(2) + ' / ' + m.recall.toFixed(2) + '</b><span>precision / recall</span></div><div><b>' + Math.round(m.true_rate * 100) + '%</b><span>sessions w/ order</span></div><div><b>' + Math.round(D.meta.metrics.txn_dau * 100) + '%</b><span>customers ordering</span></div></div><p class="note">The threshold matches the panel\'s order rate, so area totals stay unbiased.</p>'; } },
-    { t: 'Green vs Lime', h: 'Green vs Lime, area by area', time: false, cam: { zoom: 10.6, pitch: 55, bearing: -20 },
+    { t: 'Versus', h: 'Green vs Lime, area by area', time: false, cam: { zoom: 10.6, pitch: 55, bearing: -20 },
       body: function () { return '<p>The question clients pay for: <b>how many people ordered food on each app in my area today?</b> Hex colour is Lime\'s share of food orders; height is the total.</p><p class="sec">Area <small>· or click a hex</small></p><select id="area">' + AREAS.map(function (a) { return '<option' + (a === S.area ? ' selected' : '') + '>' + a + '</option>'; }).join('') + '</select>'; },
       card: function () { var g = areaSum(D.brand.green.svc.Food[1], S.area) * SC, l = areaSum(D.brand.lime.svc.Food[1], S.area) * SC;
         var rows = AREAS.map(function (a) { var gg = areaSum(D.brand.green.svc.Food[1], a), ll = areaSum(D.brand.lime.svc.Food[1], a); return [a, ll / (gg + ll)]; }).sort(function (x, y) { return y[1] - x[1]; });
         return '<p class="kick">Food · ordered today · ' + S.area + '</p><div class="vs"><div><span>Ride-hailing Green</span><div class="big" style="color:' + rgb(col('green')) + '">' + fmt(g) + '</div></div><div><span>Ride-hailing Lime</span><div class="big" style="color:' + rgb(col('lime')) + '">' + fmt(l) + '</div></div></div>' +
           '<p class="sub">Lime share ' + Math.round(l / (g + l) * 100) + '%</p><p class="sec">Lime share of food orders, by area</p><div class="bars">' + rows.map(function (r) { return '<span' + (r[0] === S.area ? ' style="font-weight:700"' : '') + '>' + r[0].replace(' & Tangerang Selatan', ' & Tangsel') + '</span><span class="tr"><b style="width:' + r[1] * 100 + '%;background:' + rgb(r[1] >= .5 ? col('lime') : col('green')) + '"></b></span><span class="v">' + Math.round(r[1] * 100) + '%</span>'; }).join('') + '</div>'; } }
   ];
+  function hostColor(k) { return D.meta.brands[k] ? rgb(col(k)) : k === 'shared' ? '#e8e8f0' : '#4a4f6a'; }
+  function sessCard() {
+    var hm = D.host_map, W = 280, H = 150;
+    // hosts of one app embed almost on top of each other: fan each group out around its centre so every host is visible
+    var grp = {}; hm.forEach(function (h) { (grp[h[2]] = grp[h[2]] || []).push(h); });
+    var pos = new Map(); Object.keys(grp).forEach(function (k) { var g = grp[k], cx = 0, cy = 0; g.forEach(function (h) { cx += h[0]; cy += h[1]; }); cx /= g.length; cy /= g.length;
+      cx = 22 + cx * (W - 44); cy = 20 + cy * (H - 40);
+      g.forEach(function (h, i) { var a = i * 2.4, r = k === 'browse' ? 4 + 2.2 * Math.sqrt(i) * 1.6 : 3 + 3.2 * Math.sqrt(i); pos.set(h, [cx + Math.cos(a) * r, cy + Math.sin(a) * r]); }); });
+    var dots = hm.map(function (h) { var p = pos.get(h); return '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="' + (h[3] ? 5 : 3) + '" fill="' + hostColor(h[2]) + '"' + (h[3] ? ' stroke="#fff" stroke-width="1.5"' : ' opacity=".85"') + '><title>' + h[4] + '</title></circle>'; }).join('');
+    var tl = D.timeline, t0 = Math.floor(tl[0][0] / 3600) * 3600, t1 = Math.ceil(tl[tl.length - 1][0] / 3600) * 3600, TW = 280;
+    function x(t) { return (4 + (t - t0) / (t1 - t0) * (TW - 8)).toFixed(1); }
+    var sess = {}; tl.forEach(function (e) { if (e[3] >= 0) { var s = sess[e[3]] || (sess[e[3]] = [e[0], e[0], e[2]]); s[0] = Math.min(s[0], e[0]); s[1] = Math.max(s[1], e[0]); if (D.meta.brands[e[2]]) s[2] = e[2]; } });
+    var ticks = tl.map(function (e) { return '<rect x="' + x(e[0]) + '" y="6" width="1.6" height="18" fill="' + hostColor(e[2]) + '"/>'; }).join('');
+    var bars = Object.keys(sess).map(function (k) { var s = sess[k]; return '<rect x="' + x(s[0]) + '" y="32" width="' + Math.max(4, x(s[1]) - x(s[0])) + '" height="10" rx="3" fill="' + hostColor(s[2]) + '"/>'; }).join('');
+    var hrs = ''; for (var t = t0; t <= t1; t += 3600 * Math.max(1, Math.round((t1 - t0) / 3600 / 6))) hrs += '<text x="' + x(t) + '" y="56">' + ('0' + (t / 3600 % 24)).slice(-2) + ':00</text>';
+    var m = D.meta.metrics.sessions;
+    return '<p class="kick">Host embedding</p><div class="hostmap"><svg viewBox="0 0 ' + W + ' ' + H + '">' + dots + '</svg></div><p class="note">Each dot is a hostname. Ringed dots are the few hosts in the starting dictionary; everything else near them was learned. White: shared hosts. Grey: ordinary websites.</p>' +
+      '<p class="sec">One subscriber\'s day</p><div class="tl"><svg viewBox="0 0 ' + TW + ' 60">' + ticks + bars + hrs + '</svg></div><p class="note">Top: host events. Bottom: the sessions rebuilt from them.</p>' +
+      '<p class="sec">Real sessions recovered</p><div class="cmp"><div><b>' + Math.round(m.rules.sessions_found * 100) + '%</b><span>host dictionary</span></div><div><b style="color:var(--accent)">' + Math.round(m.embedding.sessions_found * 100) + '%</b><span>embedding</span></div></div>';
+  }
   function appDau(b) { return D.brand[b].app * SC; }
   function svcCard(k) { var b = S.brand, svs = D.meta.services[b], tot = svs.map(function (v) { return sum(D.brand[b].svc[v][k]) * SC; }), mx = Math.max.apply(null, tot);
     return '<p class="kick">' + D.meta.brands[b].name + ' · ' + (k ? 'customers who ordered' : 'customers') + ' today</p><div class="bars" style="margin-top:8px">' + svs.map(function (v, i) { return '<span' + (v === S.svc ? ' style="font-weight:700"' : '') + '>' + v + '</span><span class="tr"><b style="width:' + tot[i] / mx * 100 + '%;background:' + rgb(col(b)) + ';opacity:' + (v === S.svc ? 1 : .45) + '"></b></span><span class="v">' + fmtT(tot[i]) + '</span>'; }).join('') + '</div>'; }
@@ -219,21 +255,21 @@ body.embed .panel, body.embed .card, body.embed .time { display: none; }
   function go(i) {
     if (i < 0 || i >= STEPS.length) return;
     S.step = i; var s = STEPS[i];
-    if (i === 1 || i === 2) { if (D.meta.brands[S.brand].kind !== 'ride') S.brand = 'green'; }
-    if (i === 3) S.svc = D.meta.services[S.brand].indexOf(S.svc) >= 0 ? S.svc : D.meta.services[S.brand][0];
-    if (i === 4) S.metric = 'txn';
+    if (i >= 1 && i <= 3) { if (D.meta.brands[S.brand].kind !== 'ride') S.brand = 'green'; }
+    if (i === 4) S.svc = D.meta.services[S.brand].indexOf(S.svc) >= 0 ? S.svc : D.meta.services[S.brand][0];
+    if (i === 5) S.metric = 'txn';
     [].forEach.call($('steps').children, function (b, k) { if (k === i) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current'); b.classList.toggle('done', k < i); });
     $('prev').disabled = i === 0; $('next').disabled = i === STEPS.length - 1;
-    $('time').hidden = !s.time; if (!s.time) S.playing = false; else if (i <= 2) { S.playing = true; $('play').textContent = '❚❚'; }
+    $('time').hidden = !s.time; if (!s.time) S.playing = false; else if (i <= 3) { S.playing = true; $('play').textContent = '❚❚'; }
     renderStep(); draw();
-    if (i === 5) flyArea(); else if (i === 2) map.flyTo({ center: [106.83, -6.24], zoom: MOBILE ? 9.8 : 10.7, pitch: 40, bearing: -12, duration: 1400 }); else if (i <= 1 || map.getZoom() > 10) map.flyTo(Object.assign({ duration: 1400 }, STEPS[0].cam, { zoom: MOBILE ? 8.7 : 9.6 }));
+    if (i === 6) flyArea(); else if (i === 3) map.flyTo({ center: [106.83, -6.24], zoom: MOBILE ? 9.8 : 10.7, pitch: 40, bearing: -12, duration: 1400 }); else if (i <= 1 || map.getZoom() > 10) map.flyTo(Object.assign({ duration: 1400 }, STEPS[0].cam, { zoom: MOBILE ? 8.7 : 9.6 }));
   }
 
   // ---------- time ----------
   var last = 0, cardTick = 0;
   function setHour(h) { S.hour = (h + 24) % 24; $('hour').value = S.hour; var hh = Math.floor(S.hour), mm = Math.floor((S.hour - hh) * 60); $('hl').textContent = (hh < 10 ? '0' : '') + hh + ':' + (mm < 10 ? '0' : '') + mm; }
   function tick(t) {
-    if (S.playing && D && STEPS[S.step].time) { var dt = Math.min(.1, (t - last) / 1000); setHour(S.hour + dt * (S.step === 2 ? .35 : .9)); draw(); }
+    if (S.playing && D && STEPS[S.step].time) { var dt = Math.min(.1, (t - last) / 1000); setHour(S.hour + dt * (S.step === 3 ? .35 : .9)); draw(); }
     last = t; requestAnimationFrame(tick);
   }
   $('play').onclick = function () { S.playing = !S.playing; $('play').textContent = S.playing ? '❚❚' : '▶'; };

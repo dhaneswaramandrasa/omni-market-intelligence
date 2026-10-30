@@ -28,6 +28,42 @@ code("""cells, people, sessions = simulate()
 print(f'{len(cells):,} hexes · {len(people):,} people · {len(sessions):,} app sessions')
 sessions.head()"""),
 md("Each session is what the network sees: hour, cell, a (noisy) **service host** hint, whether a **payment** or **driver-partner** endpoint was hit, bytes, duration, and how far the phone moved in the next hour."),
+md("""## 1b. From host events to app sessions
+The table above already has one row per session, but the network never sees sessions. It sees **hostnames**:
+an app's API, image CDNs with random names, telemetry, plus shared hosts (push, ads, maps, payments) that every app uses.
+
+- **Version 1, rules:** a dictionary of known hosts per app. New or obfuscated hosts are missed and sessions fall apart.
+- **Version 2, embedding:** hosts that **pop up together** belong together. Word2Vec over each subscriber's host stream puts an app's unknown hosts next to its known ones, so the dictionary grows itself. Shared hosts sit between apps and attach to whichever session they fall inside."""),
+code("""from omni import sessionize as z
+catalog = z.host_catalog(BRANDS)
+events, ev_sessions = z.raw_events(sessions, catalog, n_people=8000)
+print(f'{len(events):,} host events from {events.person.nunique():,} people · {events.host.nunique()} distinct hosts')
+events.head(8)"""),
+code("""rules, emb, w2v_hosts, sims = z.attribute_hosts(events, catalog)
+hidden = {h: b for b, c in catalog.items() for h in c['hidden']}
+print(f"hidden hosts attributed correctly: {sum(emb.get(h) == b for h, b in hidden.items())}/{len(hidden)}")
+print(f"shared hosts wrongly given to one app: {sum(h in emb for h in z.SHARED)}/{len(z.SHARED)}")
+sess_eval = {}
+for name, table in [('rules', rules), ('embedding', emb)]:
+    pred, app = z.sessionize(events, table)
+    sess_eval[name] = z.evaluate(events, pred, app)
+pd.DataFrame(sess_eval).round(3)"""),
+md("Rules alone recover about half of the real sessions. The embedding finds almost all of them, and most come back whole."),
+code("""from sklearn.decomposition import PCA
+hosts = [h for h in w2v_hosts.wv.index_to_key]
+from sklearn.manifold import TSNE
+xy = TSNE(2, perplexity=12, random_state=7, init='pca').fit_transform(w2v_hosts.wv[hosts])
+kind = ['shared' if h in z.SHARED else 'browse' if h in z.BROWSE else emb.get(h, '?') for h in hosts]
+known = {h for c in catalog.values() for h in c['known']}
+fig, ax = plt.subplots(figsize=(6, 4.2))
+for k in ['browse', 'shared'] + list(BRANDS):
+    sel = np.array(kind) == k
+    c = np.array(BRANDS[k]['color']) / 255 if k in BRANDS else ('#bbb' if k == 'browse' else '#555')
+    ax.scatter(*xy[sel].T, s=18, color=c, label=BRANDS[k]['name'] if k in BRANDS else k)
+for i, h in enumerate(hosts):
+    if h in known: ax.annotate(h.split('.')[0] if h.startswith('api') else h.split('.')[0], xy[i], fontsize=6.5)
+ax.set_axis_off(); ax.legend(frameon=False, fontsize=7, loc='best'); ax.set_title('Host embedding: unknown hosts land next to their app')
+plt.tight_layout(); plt.savefig('../docs/host-embedding.png'); plt.show()"""),
 md("## 2. Labelled panel\nModels are trained on a 10% **panel** of people whose app receipts are known (in production: a consented research panel). Everything is then scored on the other 90%."),
 md("## 3. Drivers vs customers\nPer person and brand: sessions, distinct cells, active hours, share of partner-endpoint traffic, distance moved."),
 code("""users = m.user_features(sessions)
@@ -84,7 +120,22 @@ svc_hours = {v: np.round(bumps(h), 4).tolist() for v, h in SVC_HOURS.items()}
 metrics = dict(driver=driver_rep, txn=txn_rep, service={k: round(r['accuracy'], 3) for k, r in svc_rep.items()},
                txn_dau=float(dau.mean()))
 trips = {b: m.driver_trips(cells, s2, b, n=220) for b in ('green', 'lime')}
-m.export_web('../web/data/omni.json', cells, people, s2, brands, services, svc_hours, metrics, SCALE, trips)
+# sessionization demo: host map + one person's morning, for the web
+from sklearn.manifold import TSNE
+hx = TSNE(2, perplexity=12, random_state=7, init='pca').fit_transform(w2v_hosts.wv[hosts]); hx = (hx - hx.min(0)) / (hx.max(0) - hx.min(0))
+host_map = [[round(float(a), 3), round(float(b), 3), k, int(h in known), h] for (a, b), k, h in zip(hx, kind, hosts)]
+pred, app = z.sessionize(events, emb)
+events['pred'] = pred; events['app'] = app
+g = events[events.true_session >= 0].groupby('person')
+span = g.t.max() - g.t.min()
+busy = ((g.brand.nunique() * 100 + g.true_session.nunique() * 10) * (span < 4 * 3600)).idxmax()   # several apps and sessions within a few hours
+tl = events[events.person == busy]
+app_t = tl[tl.true_session >= 0].t
+tl = tl[(tl.t >= app_t.min() - 1200) & (tl.t <= app_t.max() + 1200)]
+timeline = [[int(t), h, a or ('shared' if h in z.SHARED else 'browse'), int(p)] for t, h, a, p in zip(tl.t, tl.host, tl.app, tl.pred)]
+metrics['sessions'] = sess_eval
+m.export_web('../web/data/omni.json', cells, people, s2, brands, services, svc_hours, metrics, SCALE, trips,
+             extra=dict(host_map=host_map, timeline=timeline))
 import os; print(f"{os.path.getsize('../web/data/omni.json') / 1e6:.1f} MB")"""),
 md("""## Takeaways
 - Four signals carry most of the weight: the host hint, payment endpoints, bytes/duration, and movement after the session.

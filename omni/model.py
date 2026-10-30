@@ -77,7 +77,7 @@ def fit_txn(cust, panel):
     return pred, rep
 
 
-def export_web(path, cells, people, sessions, brands, services, svc_hours, metrics, scale, trips):
+def export_web(path, cells, people, sessions, brands, services, svc_hours, metrics, scale, trips, extra=None):
     """Compact JSON for the map. Counts are simulated people; the page multiplies by `scale`."""
     n = len(cells)
     hours = np.arange(24)
@@ -90,7 +90,7 @@ def export_web(path, cells, people, sessions, brands, services, svc_hours, metri
         allh[:, h] = np.bincount(loc, minlength=n) * act[h]
     out = dict(meta=dict(scale=scale, brands=brands, services=services, svc_hours=svc_hours, metrics=metrics),
                cells=[[round(a, 4), round(b, 4), c] for a, b, c in zip(cells.lon, cells.lat, cells.area)],
-               all=np.round(allh).astype(int).ravel().tolist(), brand={}, trips=trips)
+               all=np.round(allh).astype(int).ravel().tolist(), brand={}, trips=trips, **(extra or {}))
     for b in brands:
         s = sessions[sessions.brand == b]
         uh = s.drop_duplicates(["person", "hour"])
@@ -125,9 +125,10 @@ def driver_trips(cells, sessions, brand, n=250, seed=7):
         path = [[*np.round(here, 4), int(t)]]
         while t < 1380:
             dest = here + rng.normal(0, .03, 2)
+            dest = xy[np.argmin(((xy - dest) ** 2).sum(1))] + rng.normal(0, .003, 2)   # snap to a land hex: no trips into the sea
             km = np.hypot(*(dest - here)) * 111
             t += km / 22 * 60                                   # ~22 km/h in traffic
-            mid = (here + dest) / 2 + rng.normal(0, .006, 2)
+            mid = (here + dest) / 2 + rng.normal(0, .002, 2)
             path += [[*np.round(mid, 4), int(t - km / 44 * 60)], [*np.round(dest, 4), int(t)]]
             here = dest
             t += rng.uniform(5, 40)                             # waiting for the next order

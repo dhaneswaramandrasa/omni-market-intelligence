@@ -11,10 +11,10 @@ import numpy as np
 import pandas as pd
 
 BRANDS = {
-    "green":  dict(name="Ride-hailing Green",  kind="ride", dau=.17, driver=.07, color=(46, 158, 79)),
-    "lime":   dict(name="Ride-hailing Lime",   kind="ride", dau=.13, driver=.08, color=(150, 190, 30)),
-    "orange": dict(name="E-commerce Orange",   kind="shop", dau=.15, driver=0,   color=(238, 108, 43)),
-    "teal":   dict(name="E-commerce Teal",     kind="shop", dau=.10, driver=0,   color=(31, 158, 154)),
+    "green":  dict(name="Ride-hailing Green",  kind="ride", dau=.17, driver=.07, color=(46, 230, 140)),
+    "lime":   dict(name="Ride-hailing Lime",   kind="ride", dau=.13, driver=.08, color=(255, 214, 10)),
+    "orange": dict(name="E-commerce Orange",   kind="shop", dau=.15, driver=0,   color=(255, 92, 57)),
+    "teal":   dict(name="E-commerce Teal",     kind="shop", dau=.10, driver=0,   color=(56, 189, 248)),
 }
 SERVICES = {
     "ride": dict(Ride=.35, Car=.15, Food=.35, Mart=.15),
