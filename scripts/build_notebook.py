@@ -1,0 +1,95 @@
+"""Writes notebooks/omni_market_intelligence.ipynb. Run it, then execute the notebook."""
+import nbformat as nbf
+
+md, code = nbf.v4.new_markdown_cell, nbf.v4.new_code_cell
+cells = [
+md("""# Omni Market Intelligence: app markets from telco traffic
+
+How many people in **BSD** ordered food on **Ride-hailing Green** today, compared with **Ride-hailing Lime**?
+The apps won't tell each other. A mobile network can estimate it for every brand at once, from traffic alone.
+
+The funnel this notebook rebuilds:
+
+```
+telco DAU ─► app users (host lookup) ─► drivers vs customers ─► service (Ride/Car/Food/Mart…) ─► transacted?
+```
+
+> I built the production version at Eureka AI (2021–2024) for super-app, ride-hailing and e-commerce clients
+> in Jakarta, Bangkok, Kuala Lumpur and Singapore, and it grew from 5% to 70% of company revenue.
+> **Here everything is simulated and every brand is anonymised**; the method is the real one."""),
+code("""import sys; sys.path.insert(0, '..')
+import numpy as np, pandas as pd, matplotlib.pyplot as plt
+from omni.sim import simulate, BRANDS, SERVICES, SVC_HOURS, bumps
+from omni import model as m
+plt.rcParams.update({'figure.dpi': 110, 'axes.spines.top': False, 'axes.spines.right': False, 'font.size': 9})
+SCALE = 150          # one simulated person = 150 real subscribers → about 30M daily users in Jabodetabek"""),
+md("## 1. Simulate a day on the network\n200,000 people on a 2 km hex grid over Jabodetabek. Each one sleeps somewhere, 60% commute to work, and some use one or more of four apps."),
+code("""cells, people, sessions = simulate()
+print(f'{len(cells):,} hexes · {len(people):,} people · {len(sessions):,} app sessions')
+sessions.head()"""),
+md("Each session is what the network sees: hour, cell, a (noisy) **service host** hint, whether a **payment** or **driver-partner** endpoint was hit, bytes, duration, and how far the phone moved in the next hour."),
+md("## 2. Labelled panel\nModels are trained on a 10% **panel** of people whose app receipts are known (in production: a consented research panel). Everything is then scored on the other 90%."),
+md("## 3. Drivers vs customers\nPer person and brand: sessions, distinct cells, active hours, share of partner-endpoint traffic, distance moved."),
+code("""users = m.user_features(sessions)
+panel = m.split_panel(users)
+users['driver_pred'], driver_rep = m.fit_driver(users, panel)
+s = sessions.merge(users[['person', 'brand', 'driver_pred']], on=['person', 'brand'])
+ride_users = users[users.brand.isin(['green', 'lime'])]
+print(f"driver precision {driver_rep['precision']:.2f} · recall {driver_rep['recall']:.2f}")
+print(f"drivers as share of ride-hailing app users: {ride_users.driver_pred.mean():.1%}")"""),
+md("## 4. Which service?\nA session's host hint is wrong or ambiguous 22% of the time, so the model also uses bytes, duration and movement afterwards (a Ride moves you; Food doesn't)."),
+code("""cust = s[~s.driver_pred].reset_index(drop=True)
+cpanel = m.split_panel(cust)
+cust['service_pred'], svc_rep = m.fit_service(cust, cpanel)
+for k, r in svc_rep.items():
+    print(f"{k:13s} accuracy {r['accuracy']:.2f} · " + ' · '.join(f"{c} F1 {r[c]['f1-score']:.2f}" for c in r if c not in ('accuracy', 'macro avg', 'weighted avg')))"""),
+md("## 5. Did the session end in an order?\nThe threshold is set so the predicted transaction rate matches the panel's rate. That keeps the market totals unbiased even though single sessions are uncertain."),
+code("""cust['txn_pred'], txn_rep = m.fit_txn(cust, cpanel)
+print(f"AUC {txn_rep['auc']:.3f} · precision {txn_rep['precision']:.2f} · recall {txn_rep['recall']:.2f}")
+print(f"sessions with an order: true {txn_rep['true_rate']:.1%} · predicted {txn_rep['pred_rate']:.1%}")
+dau = cust.groupby(['person', 'brand']).txn_pred.any()
+print(f"customers who ordered at least once today: {dau.mean():.1%}")"""),
+md("## 6. The funnel"),
+code("""rows = []
+for b, cfg in BRANDS.items():
+    u = users[users.brand == b]; c = cust[cust.brand == b]
+    rows.append(dict(brand=cfg['name'], app_dau=len(u) * SCALE, drivers=u.driver_pred.sum() * SCALE,
+                     customers=(~u.driver_pred).sum() * SCALE,
+                     ordering_customers=c[c.txn_pred].person.nunique() * SCALE))
+funnel = pd.DataFrame(rows).set_index('brand')
+print(f'telco DAU (Jabodetabek, simulated): {len(people) * SCALE / 1e6:.0f}M')
+(funnel / 1e6).round(2).rename(columns=lambda x: x + ' (M)')"""),
+md("## 7. The question clients pay for\nFood: daily users who ordered, by area, Green vs Lime."),
+code("""cust['area'] = cells.area.values[cust.cell]
+food = cust[(cust.service_pred == 'Food') & cust.txn_pred & cust.brand.isin(['green', 'lime'])]
+tab = food.groupby(['area', 'brand']).person.nunique().unstack().mul(SCALE)
+tab['lime_share'] = tab.lime / (tab.green + tab.lime)
+tab = tab.sort_values('lime_share', ascending=False)
+display((tab[['green', 'lime']] / 1e3).round(0).astype(int).rename(columns={'green': 'Green (K)', 'lime': 'Lime (K)'}).join(tab.lime_share.map('{:.0%}'.format)))
+
+fig, ax = plt.subplots(figsize=(7, 3.6))
+y = np.arange(len(tab))
+ax.barh(y - .2, tab.green / 1e3, .4, color=np.array(BRANDS['green']['color']) / 255, label='Ride-hailing Green')
+ax.barh(y + .2, tab.lime / 1e3, .4, color=np.array(BRANDS['lime']['color']) / 255, label='Ride-hailing Lime')
+ax.set_yticks(y, tab.index); ax.invert_yaxis(); ax.set_xlabel('daily users who ordered food (K)')
+ax.legend(frameon=False); ax.set_title('Food orders by area: Lime leads in BSD & Tangerang Selatan')
+plt.tight_layout(); plt.savefig('../docs/food-by-area.png'); plt.show()"""),
+md("## 8. Export for the 3D map"),
+code("""s2 = s.merge(cust[['person', 'brand', 'hour', 'cell', 'service_pred', 'txn_pred']].drop_duplicates(['person', 'brand', 'hour', 'cell']),
+              on=['person', 'brand', 'hour', 'cell'], how='left')
+s2['service_pred'] = s2.service_pred.fillna('Driver'); s2['txn_pred'] = s2.txn_pred.fillna(False).astype(bool)
+brands = {b: dict(name=c['name'], kind=c['kind'], color=c['color']) for b, c in BRANDS.items()}
+services = {b: list(SERVICES[c['kind']]) for b, c in BRANDS.items()}
+svc_hours = {v: np.round(bumps(h), 4).tolist() for v, h in SVC_HOURS.items()}
+metrics = dict(driver=driver_rep, txn=txn_rep, service={k: round(r['accuracy'], 3) for k, r in svc_rep.items()},
+               txn_dau=float(dau.mean()))
+trips = {b: m.driver_trips(cells, s2, b, n=220) for b in ('green', 'lime')}
+m.export_web('../web/data/omni.json', cells, people, s2, brands, services, svc_hours, metrics, SCALE, trips)
+import os; print(f"{os.path.getsize('../web/data/omni.json') / 1e6:.1f} MB")"""),
+md("""## Takeaways
+- Four signals carry most of the weight: the host hint, payment endpoints, bytes/duration, and movement after the session.
+- Single sessions are uncertain (precision around 0.8), but calibrated totals per area are what clients buy, and those are stable.
+- In production: PySpark over clickstream and cell records, models tracked in MLflow, refreshed daily per city."""),
+]
+nb = nbf.v4.new_notebook(cells=cells, metadata={'kernelspec': {'name': 'python3', 'display_name': 'Python 3', 'language': 'python'}})
+nbf.write(nb, 'notebooks/omni_market_intelligence.ipynb')
