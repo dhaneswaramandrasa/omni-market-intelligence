@@ -2,9 +2,13 @@
 
 **Who ordered what, where, today?** App markets read from telco traffic: app users → drivers vs customers → service → orders, for every brand and every area at once.
 
-[**▶ Live 3D map**](https://dhaneswaramandrasa.github.io/omni-market-intelligence/) · [Notebook](notebooks/omni_market_intelligence.ipynb) · [Portfolio](https://dhaneswara-mandrasa.vercel.app)
+<p align="center">
+  <a href="https://dhaneswaramandrasa.github.io/omni-market-intelligence/"><img src="docs/demo-3d.gif" alt="3D hex map of Jabodetabek glowing by how many people are on the mobile network" width="100%"></a>
+</p>
+<h3 align="center"><a href="https://dhaneswaramandrasa.github.io/omni-market-intelligence/">▶ Open the 3D market map</a></h3>
+<p align="center"><i>Jabodetabek in 2 km hexes: people on the network hour by hour, app users, driver trips, services, orders, and Gas-pol vs Ne-beng area by area.</i><br>Runs in the browser, no install.</p>
 
-![Gas-pol vs Ne-beng food orders in BSD](docs/demo-gaspol-vs-nebeng.png)
+[Notebook](notebooks/omni_market_intelligence.ipynb) · [Portfolio](https://dhaneswara-mandrasa.vercel.app)
 
 > **Simulated data, real method, anonymised brands.** I built the production version at Eureka AI (2021–2024)
 > for super-app, ride-hailing and e-commerce clients in Jakarta, Bangkok, Kuala Lumpur and Singapore. It grew
