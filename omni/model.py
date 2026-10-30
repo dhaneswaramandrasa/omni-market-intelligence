@@ -12,6 +12,7 @@ from sklearn.ensemble import HistGradientBoostingClassifier
 from sklearn.metrics import classification_report, precision_score, recall_score, roc_auc_score
 
 SESSION_X = ["hour", "host_pay", "host_partner", "kb", "duration_s", "move_km_60m"]
+TRIP_X = ["trip_km", "speed_kmh", "toll_share", "stop_go", "move_km_60m", "hour", "kb", "duration_s"]
 
 
 def user_features(sessions):
@@ -55,12 +56,40 @@ def fit_service(cust, panel):
     for kind, idx in cust.groupby(cust.brand.isin(["gaspol", "nebeng"])).groups.items():
         idx = np.asarray([cust.index.get_loc(i) for i in idx])
         p = panel[idx]
-        clf = HistGradientBoostingClassifier(max_iter=200, random_state=7).fit(X.iloc[idx][p], cust.service.iloc[idx][p])
+        y = cust.service.iloc[idx].replace({"Ride": "Transport", "Car": "Transport"})   # the panel can't split them either
+        clf = HistGradientBoostingClassifier(max_iter=200, random_state=7).fit(X.iloc[idx][p], y[p])
         pr = clf.predict(X.iloc[idx])
         out[idx] = pr
         reports["ride-hailing" if kind else "e-commerce"] = classification_report(
-            cust.service.iloc[idx][~p], pr[~p], output_dict=True, zero_division=0)
+            y[~p], pr[~p], output_dict=True, zero_division=0)
     return out, reports
+
+
+def split_ride_car(cust, teacher="nebeng", student="gaspol"):
+    """Ride (2 wheels) vs Car (4 wheels) when both use one host.
+
+    The teacher brand calls a separate host for cars, so its sessions are labelled for free.
+    A model trained on the teacher's trips (distance, speed, toll roads, stop-and-go) labels the
+    student brand's transport sessions, where the host says nothing.
+    """
+    tr = (cust.service_pred == "Transport").values
+    t = tr & (cust.brand == teacher).values
+    y = np.where(cust.host_service.values == "Car", "Car", "Ride")
+    X = cust[TRIP_X].astype(float)
+    clf = HistGradientBoostingClassifier(max_iter=200, random_state=7).fit(X[t], y[t])
+    pred = cust.service_pred.values.copy()
+    pred[tr] = clf.predict(X[tr])
+    pred[t & (y == "Car")] = "Car"                                          # the teacher's own host is trusted
+    s = tr & (cust.brand == student).values & cust.service.isin(["Ride", "Car"]).values
+    trip = s & cust.txn.values
+    rep = dict(
+        accuracy_ordered=float((pred[trip] == cust.service.values[trip]).mean()),
+        accuracy_all=float((pred[s] == cust.service.values[s]).mean()),
+        car_share_true=float((cust.service.values[trip] == "Car").mean()),
+        car_share_pred=float((pred[trip] == "Car").mean()),
+        teacher_label_noise=float((y[t & cust.service.isin(["Ride", "Car"]).values] != cust.service.values[t & cust.service.isin(["Ride", "Car"]).values]).mean()),
+    )
+    return pred, rep
 
 
 def fit_txn(cust, panel):

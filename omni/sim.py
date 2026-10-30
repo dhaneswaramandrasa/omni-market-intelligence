@@ -154,4 +154,17 @@ def add_network_features(s, rng):
     move = np.where(s.txn & ride, rng.lognormal(np.log(6), .6, m), rng.exponential(.6, m))
     move = np.where(s.driver, rng.lognormal(np.log(4), .7, m), move)
     s["move_km_60m"] = move                                            # distance travelled in the next hour
+
+    # Ride (2 wheels) and Car (4 wheels) usually share one host: the network only sees "Transport".
+    # Ne-beng is the exception: its car product calls its own host, which gives free labels.
+    car = (s.service == "Car").values
+    shared = s.host_service.isin(["Ride", "Car"]).values
+    own_car_host = (s.brand == "nebeng").values & car & (rng.random(m) < .9)
+    s["host_service"] = np.where(shared, np.where(own_car_host, "Car", "Transport"), s.host_service)
+    # trip shape after an order: cars go further, slower in traffic, and use toll roads; bikes weave through
+    trip = s.txn.values & ride
+    s["trip_km"] = np.where(trip, rng.lognormal(np.log(np.where(car, 10, 5)), .5), 0)
+    s["speed_kmh"] = np.where(trip, np.clip(rng.normal(np.where(car, 18, 24), 5), 4, 60), 0)
+    s["toll_share"] = np.where(trip, np.clip(rng.beta(np.where(car, 2, .3), np.where(car, 6, 12)), 0, 1), 0)
+    s["stop_go"] = np.where(trip, rng.normal(np.where(car, .55, .4), .12), 0)   # share of time below 5 km/h
     return s

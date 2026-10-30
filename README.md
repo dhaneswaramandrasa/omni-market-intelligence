@@ -40,6 +40,15 @@ CDNs with random names, telemetry, and push, ads, maps and payment hosts that ev
 
 ![Sessions from host events](docs/demo-sessions.png)
 
+## Ride or Car on one host
+
+Two-wheel Ride and four-wheel Car usually call the **same host**, so traffic alone says only "Transport".
+Ne-beng's car product calls its own host, so its sessions come **labelled for free**. A supervised model learns what
+a car trip looks like on the network (longer, slower in traffic, more toll-road cells, more stop-and-go) and then
+labels **Gas-pol**, whose host is shared. It gets 94% of Gas-pol's ordered trips right. The car share comes out a
+little low because 7% of Ne-beng car sessions miss their own host and teach the model they were rides; in
+production that bias is measured on a panel and corrected.
+
 ## The funnel
 
 ```
@@ -48,6 +57,7 @@ telco DAU (30M, Jabodetabek)
      ├─ drivers          classifier: partner endpoint, cells, hours    ≈ 7% of ride-hailing app users
      └─ customers
          ├─ service      classifier: host hint, bytes, duration, movement afterwards
+         │   └─ Ride vs Car   one shared host → trained on the brand that has a car host, applied to the one that doesn't
          └─ ordered?     classifier: payment endpoint, heavier sessions, a trip right after
                                                                        ≈ 12% of sessions · ≈ 24% of customers
 ```
@@ -58,6 +68,7 @@ Models are gradient-boosted trees trained on a 10% labelled **panel** and scored
 |---|---|
 | Driver vs customer | precision 0.94 · recall 0.89 |
 | Service | accuracy 0.89 (ride-hailing) · 0.86 (e-commerce) |
+| Ride vs Car (Gas-pol, no car host) | 94% of ordered trips right · car share 23% est. vs 28% true |
 | Ordered? | AUC 0.96 · precision 0.78 · recall 0.80 |
 
 The order threshold is set so the predicted rate matches the panel's rate, which keeps **area totals unbiased**

@@ -79,6 +79,16 @@ cpanel = m.split_panel(cust)
 cust['service_pred'], svc_rep = m.fit_service(cust, cpanel)
 for k, r in svc_rep.items():
     print(f"{k:13s} accuracy {r['accuracy']:.2f} · " + ' · '.join(f"{c} F1 {r[c]['f1-score']:.2f}" for c in r if c not in ('accuracy', 'macro avg', 'weighted avg')))"""),
+md("""## 4b. Ride or Car, when both use one host
+Two-wheel **Ride** and four-wheel **Car** usually call the same host, so the model above can only say **Transport**.
+The way in: **Ne-beng** calls a separate host for its car product. That gives free labels on Ne-beng's own traffic.
+A supervised model learns what a car trip looks like on the network (longer, slower in traffic, more toll-road cells,
+more stop-and-go) and then labels **Gas-pol**, whose host says nothing."""),
+code("""cust['service_pred'], rc_rep = m.split_ride_car(cust, teacher='nebeng', student='gaspol')
+print(f"Gas-pol ordered trips labelled correctly: {rc_rep['accuracy_ordered']:.0%} (all transport sessions: {rc_rep['accuracy_all']:.0%})")
+print(f"Gas-pol car share of trips: true {rc_rep['car_share_true']:.0%} · estimated {rc_rep['car_share_pred']:.0%}")
+print(f"teacher label noise (car sessions that missed their own host): {rc_rep['teacher_label_noise']:.0%}")"""),
+md("Trips are easy; sessions that end without a trip are mostly guesswork, which is why the session-level number is lower. The car share comes out a little low because some Ne-beng car sessions miss their own host and teach the model they were rides. In production that bias is measured on a panel and corrected."),
 md("## 5. Did the session end in an order?\nThe threshold is set so the predicted transaction rate matches the panel's rate. That keeps the market totals unbiased even though single sessions are uncertain."),
 code("""cust['txn_pred'], txn_rep = m.fit_txn(cust, cpanel)
 print(f"AUC {txn_rep['auc']:.3f} · precision {txn_rep['precision']:.2f} · recall {txn_rep['recall']:.2f}")
@@ -117,7 +127,7 @@ s2['service_pred'] = s2.service_pred.fillna('Driver'); s2['txn_pred'] = s2.txn_p
 brands = {b: dict(name=c['name'], kind=c['kind'], color=c['color']) for b, c in BRANDS.items()}
 services = {b: list(SERVICES[c['kind']]) for b, c in BRANDS.items()}
 svc_hours = {v: np.round(bumps(h), 4).tolist() for v, h in SVC_HOURS.items()}
-metrics = dict(driver=driver_rep, txn=txn_rep, service={k: round(r['accuracy'], 3) for k, r in svc_rep.items()},
+metrics = dict(driver=driver_rep, txn=txn_rep, ride_car=rc_rep, service={k: round(r['accuracy'], 3) for k, r in svc_rep.items()},
                txn_dau=float(dau.mean()))
 trips = {b: m.driver_trips(cells, s2, b, n=220) for b in ('gaspol', 'nebeng')}
 # sessionization demo: host map + one person's morning, for the web
