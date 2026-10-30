@@ -52,7 +52,7 @@ def fit_service(cust, panel):
     X = _session_matrix(cust)
     out = np.empty(len(cust), object)
     reports = {}
-    for kind, idx in cust.groupby(cust.brand.isin(["green", "lime"])).groups.items():
+    for kind, idx in cust.groupby(cust.brand.isin(["gaspol", "nebeng"])).groups.items():
         idx = np.asarray([cust.index.get_loc(i) for i in idx])
         p = panel[idx]
         clf = HistGradientBoostingClassifier(max_iter=200, random_state=7).fit(X.iloc[idx][p], cust.service.iloc[idx][p])

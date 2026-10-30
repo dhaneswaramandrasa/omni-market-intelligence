@@ -4,17 +4,17 @@ Everything here is invented. The structure follows the production pipeline:
 the network sees a subscriber's cell, the hosts their phone talks to, bytes,
 duration and how far they move afterwards. It never sees the app's own data.
 
-Brands are anonymised: two ride-hailing super-apps (Green, Lime) and two
-marketplaces (Orange, Teal).
+Brands are anonymised: two ride-hailing super-apps (Gas-pol, Ne-beng) and two
+marketplaces (ShoppingYuk, Lapakku).
 """
 import numpy as np
 import pandas as pd
 
 BRANDS = {
-    "green":  dict(name="Ride-hailing Green",  kind="ride", dau=.17, driver=.07, color=(46, 230, 140)),
-    "lime":   dict(name="Ride-hailing Lime",   kind="ride", dau=.13, driver=.08, color=(255, 214, 10)),
-    "orange": dict(name="E-commerce Orange",   kind="shop", dau=.15, driver=0,   color=(255, 92, 57)),
-    "teal":   dict(name="E-commerce Teal",     kind="shop", dau=.10, driver=0,   color=(56, 189, 248)),
+    "gaspol":  dict(name="Gas-pol",  kind="ride", dau=.17, driver=.07, color=(46, 230, 140)),
+    "nebeng":   dict(name="Ne-beng",   kind="ride", dau=.13, driver=.08, color=(255, 214, 10)),
+    "shoppingyuk": dict(name="ShoppingYuk",   kind="shop", dau=.15, driver=0,   color=(255, 92, 57)),
+    "lapakku":   dict(name="Lapakku",     kind="shop", dau=.10, driver=0,   color=(56, 189, 248)),
 }
 SERVICES = {
     "ride": dict(Ride=.35, Car=.15, Food=.35, Mart=.15),
@@ -46,13 +46,13 @@ WORK = [(106.822, -6.212, .018, 4), (106.830, -6.230, .015, 2), (106.79, -6.24, 
         (106.83, -6.40, .03, .8), (106.80, -6.58, .03, .6), (106.99, -6.24, .03, 1)]
 # brand strength by area (multiplies daily-active chance); makes the market map uneven
 BRAND_AREA = {
-    "green": {"Jakarta Selatan": 1.2, "Jakarta Pusat": 1.2, "Depok": 1.1, "BSD & Tangerang Selatan": .85, "Tangerang": .9},
-    "lime": {"BSD & Tangerang Selatan": 1.35, "Tangerang": 1.25, "Jakarta Barat": 1.15, "Jakarta Pusat": .9},
-    "orange": {"Bekasi": 1.2, "Cikarang": 1.2, "Bogor": 1.1},
-    "teal": {"Jakarta Selatan": 1.15, "BSD & Tangerang Selatan": 1.2},
+    "gaspol": {"Jakarta Selatan": 1.2, "Jakarta Pusat": 1.2, "Depok": 1.1, "BSD & Tangerang Selatan": .85, "Tangerang": .9},
+    "nebeng": {"BSD & Tangerang Selatan": 1.35, "Tangerang": 1.25, "Jakarta Barat": 1.15, "Jakarta Pusat": .9},
+    "shoppingyuk": {"Bekasi": 1.2, "Cikarang": 1.2, "Bogor": 1.1},
+    "lapakku": {"Jakarta Selatan": 1.15, "BSD & Tangerang Selatan": 1.2},
 }
-# Lime's food business is unusually strong in BSD: the story the demo tells
-FOOD_BOOST = {("lime", "BSD & Tangerang Selatan"): 1.5, ("green", "BSD & Tangerang Selatan"): .85}
+# Ne-beng's food business is unusually strong in BSD: the story the demo tells
+FOOD_BOOST = {("nebeng", "BSD & Tangerang Selatan"): 1.5, ("gaspol", "BSD & Tangerang Selatan"): .85}
 
 BBOX = (106.55, -6.66, 107.22, -6.09)
 

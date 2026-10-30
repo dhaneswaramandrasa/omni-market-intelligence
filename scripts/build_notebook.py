@@ -5,7 +5,7 @@ md, code = nbf.v4.new_markdown_cell, nbf.v4.new_code_cell
 cells = [
 md("""# Omni Market Intelligence: app markets from telco traffic
 
-How many people in **BSD** ordered food on **Ride-hailing Green** today, compared with **Ride-hailing Lime**?
+How many people in **BSD** ordered food on **Gas-pol** today, compared with **Ne-beng**?
 The apps won't tell each other. A mobile network can estimate it for every brand at once, from traffic alone.
 
 The funnel this notebook rebuilds:
@@ -70,7 +70,7 @@ code("""users = m.user_features(sessions)
 panel = m.split_panel(users)
 users['driver_pred'], driver_rep = m.fit_driver(users, panel)
 s = sessions.merge(users[['person', 'brand', 'driver_pred']], on=['person', 'brand'])
-ride_users = users[users.brand.isin(['green', 'lime'])]
+ride_users = users[users.brand.isin(['gaspol', 'nebeng'])]
 print(f"driver precision {driver_rep['precision']:.2f} · recall {driver_rep['recall']:.2f}")
 print(f"drivers as share of ride-hailing app users: {ride_users.driver_pred.mean():.1%}")"""),
 md("## 4. Which service?\nA session's host hint is wrong or ambiguous 22% of the time, so the model also uses bytes, duration and movement afterwards (a Ride moves you; Food doesn't)."),
@@ -95,20 +95,20 @@ for b, cfg in BRANDS.items():
 funnel = pd.DataFrame(rows).set_index('brand')
 print(f'telco DAU (Jabodetabek, simulated): {len(people) * SCALE / 1e6:.0f}M')
 (funnel / 1e6).round(2).rename(columns=lambda x: x + ' (M)')"""),
-md("## 7. The question clients pay for\nFood: daily users who ordered, by area, Green vs Lime."),
+md("## 7. The question clients pay for\nFood: daily users who ordered, by area, Gas-pol vs Ne-beng."),
 code("""cust['area'] = cells.area.values[cust.cell]
-food = cust[(cust.service_pred == 'Food') & cust.txn_pred & cust.brand.isin(['green', 'lime'])]
+food = cust[(cust.service_pred == 'Food') & cust.txn_pred & cust.brand.isin(['gaspol', 'nebeng'])]
 tab = food.groupby(['area', 'brand']).person.nunique().unstack().mul(SCALE)
-tab['lime_share'] = tab.lime / (tab.green + tab.lime)
+tab['lime_share'] = tab.nebeng / (tab.gaspol + tab.nebeng)
 tab = tab.sort_values('lime_share', ascending=False)
-display((tab[['green', 'lime']] / 1e3).round(0).astype(int).rename(columns={'green': 'Green (K)', 'lime': 'Lime (K)'}).join(tab.lime_share.map('{:.0%}'.format)))
+display((tab[['gaspol', 'nebeng']] / 1e3).round(0).astype(int).rename(columns={'gaspol': 'Gas-pol (K)', 'nebeng': 'Ne-beng (K)'}).join(tab.lime_share.map('{:.0%}'.format)))
 
 fig, ax = plt.subplots(figsize=(7, 3.6))
 y = np.arange(len(tab))
-ax.barh(y - .2, tab.green / 1e3, .4, color=np.array(BRANDS['green']['color']) / 255, label='Ride-hailing Green')
-ax.barh(y + .2, tab.lime / 1e3, .4, color=np.array(BRANDS['lime']['color']) / 255, label='Ride-hailing Lime')
+ax.barh(y - .2, tab.gaspol / 1e3, .4, color=np.array(BRANDS['gaspol']['color']) / 255, label='Gas-pol')
+ax.barh(y + .2, tab.nebeng / 1e3, .4, color=np.array(BRANDS['nebeng']['color']) / 255, label='Ne-beng')
 ax.set_yticks(y, tab.index); ax.invert_yaxis(); ax.set_xlabel('daily users who ordered food (K)')
-ax.legend(frameon=False); ax.set_title('Food orders by area: Lime leads in BSD & Tangerang Selatan')
+ax.legend(frameon=False); ax.set_title('Food orders by area: Ne-beng leads in BSD & Tangerang Selatan')
 plt.tight_layout(); plt.savefig('../docs/food-by-area.png'); plt.show()"""),
 md("## 8. Export for the 3D map"),
 code("""s2 = s.merge(cust[['person', 'brand', 'hour', 'cell', 'service_pred', 'txn_pred']].drop_duplicates(['person', 'brand', 'hour', 'cell']),
@@ -119,7 +119,7 @@ services = {b: list(SERVICES[c['kind']]) for b, c in BRANDS.items()}
 svc_hours = {v: np.round(bumps(h), 4).tolist() for v, h in SVC_HOURS.items()}
 metrics = dict(driver=driver_rep, txn=txn_rep, service={k: round(r['accuracy'], 3) for k, r in svc_rep.items()},
                txn_dau=float(dau.mean()))
-trips = {b: m.driver_trips(cells, s2, b, n=220) for b in ('green', 'lime')}
+trips = {b: m.driver_trips(cells, s2, b, n=220) for b in ('gaspol', 'nebeng')}
 # sessionization demo: host map + one person's morning, for the web
 from sklearn.manifold import TSNE
 hx = TSNE(2, perplexity=12, random_state=7, init='pca').fit_transform(w2v_hosts.wv[hosts]); hx = (hx - hx.min(0)) / (hx.max(0) - hx.min(0))

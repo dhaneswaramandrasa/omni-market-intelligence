@@ -4,7 +4,7 @@
 
 [**▶ Live 3D map**](https://dhaneswaramandrasa.github.io/omni-market-intelligence/) · [Notebook](notebooks/omni_market_intelligence.ipynb) · [Portfolio](https://dhaneswara-mandrasa.vercel.app)
 
-![Green vs Lime food orders in BSD](docs/demo-green-vs-lime.png)
+![Gas-pol vs Ne-beng food orders in BSD](docs/demo-gaspol-vs-nebeng.png)
 
 > **Simulated data, real method, anonymised brands.** I built the production version at Eureka AI (2021–2024)
 > for super-app, ride-hailing and e-commerce clients in Jakarta, Bangkok, Kuala Lumpur and Singapore. It grew
@@ -12,13 +12,13 @@
 
 ## The question
 
-*How many people in BSD ordered food on Ride-hailing Green today, compared with Ride-hailing Lime?*
+*How many people in BSD ordered food on Gas-pol today, compared with Ne-beng?*
 Neither app shares its numbers. A mobile network sees every app's traffic, so it can estimate this for all of them.
 
 | Brand (anonymised) | Kind | Services |
 |---|---|---|
-| Ride-hailing **Green**, Ride-hailing **Lime** | super-app | Ride · Car · Food · Mart |
-| E-commerce **Orange**, E-commerce **Teal** | marketplace | Fashion · Electronics · Groceries · Home |
+| Ride-hailing **Gas-pol**, Ride-hailing **Ne-beng** | super-app | Ride · Car · Food · Mart |
+| E-commerce **ShoppingYuk**, E-commerce **Lapakku** | marketplace | Fashion · Electronics · Groceries · Home |
 
 ## Step zero: from hostnames to sessions
 
@@ -44,7 +44,7 @@ CDNs with random names, telemetry, and push, ads, maps and payment hosts that ev
 
 ```
 telco DAU (30M, Jabodetabek)
- └─ app users            host lookup on traffic                       Green ≈ 5.3M · Lime ≈ 4.1M
+ └─ app users            host lookup on traffic                       Gas-pol ≈ 5.3M · Ne-beng ≈ 4.1M
      ├─ drivers          classifier: partner endpoint, cells, hours    ≈ 7% of ride-hailing app users
      └─ customers
          ├─ service      classifier: host hint, bytes, duration, movement afterwards
@@ -75,7 +75,7 @@ even though single sessions are uncertain. Clients buy the totals.
 4. **Drivers vs customers**: animated driver trips for both ride-hailing brands
 5. **Which service**: Ride / Car / Food / Mart, Fashion / Electronics / …
 6. **Did they order**: users vs users who ordered, plus model quality
-7. **Green vs Lime**: Lime's share of food orders per hex, for any area (BSD by default)
+7. **Gas-pol vs Ne-beng**: Ne-beng's share of food orders per hex, for any area (BSD by default)
 
 ![The city breathes](docs/demo-city.png)
 

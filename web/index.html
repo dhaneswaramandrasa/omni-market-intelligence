@@ -6,7 +6,7 @@
 <title>Omni Market Intelligence · Jakarta</title>
 <meta name="description" content="App markets read from telco traffic: app users, drivers vs customers, services and orders for anonymised ride-hailing and e-commerce brands across Jabodetabek. Simulated data, real method.">
 <meta property="og:title" content="Omni Market Intelligence · Jakarta">
-<meta property="og:description" content="How many people in BSD ordered food on Green vs Lime today? Simulated data, real method.">
+<meta property="og:description" content="How many people in BSD ordered food on Gas-pol vs Ne-beng today? Simulated data, real method.">
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
@@ -116,7 +116,7 @@ body.embed .panel, body.embed .card, body.embed .time { display: none; }
   'use strict';
   var MOBILE = matchMedia('(max-width: 860px)').matches;
   var D, N, SC, cells, AREAS;
-  var S = { step: 0, hour: 7, playing: true, brand: 'green', svc: 'Food', metric: 'txn', area: 'BSD & Tangerang Selatan' };
+  var S = { step: 0, hour: 7, playing: true, brand: 'gaspol', svc: 'Food', metric: 'txn', area: 'BSD & Tangerang Selatan' };
   var $ = function (id) { return document.getElementById(id); };
   function fmt(n) { return n >= 1e6 ? (n / 1e6).toFixed(n >= 1e7 ? 0 : 1) + '<small>M</small>' : n >= 1e3 ? Math.round(n / 1e3) + '<small>K</small>' : Math.round(n); }
   function fmtT(n) { return n >= 1e6 ? (n / 1e6).toFixed(1) + 'M' : n >= 1e3 ? Math.round(n / 1e3) + 'K' : String(Math.round(n)); }
@@ -143,9 +143,9 @@ body.embed .panel, body.embed .card, body.embed .time { display: none; }
     if (st >= 1 && st <= 3) return { v: hourly(B.hour, S.hour), c: col(S.brand), label: D.meta.brands[S.brand].name + ' users this hour' };
     if (st === 4 || st === 5) { var sv = B.svc[S.svc], k = st === 5 && S.metric === 'txn' ? 1 : 0;
       return { v: sv[k], c: col(S.brand), label: S.svc + (k ? ' users who ordered today' : ' users today') }; }
-    var g = D.brand.green.svc.Food[1], l = D.brand.lime.svc.Food[1], v = new Float32Array(N), share = new Float32Array(N);
+    var g = D.brand.gaspol.svc.Food[1], l = D.brand.nebeng.svc.Food[1], v = new Float32Array(N), share = new Float32Array(N);
     for (var i = 0; i < N; i++) { v[i] = g[i] + l[i]; share[i] = v[i] ? l[i] / v[i] : .5; }
-    return { v: v, share: share, label: 'Food orders today (Green + Lime)' };
+    return { v: v, share: share, label: 'Food orders today (Gas-pol + Ne-beng)' };
   }
   var maxCache = {};
   function layers() {
@@ -160,7 +160,7 @@ body.embed .panel, body.embed .card, body.embed .time { display: none; }
       getElevation: function (d) { return Math.sqrt(d.v / (mx || 1)) * (S.step === 6 ? 3500 : S.step === 3 ? 1500 : 11000); },
       getFillColor: function (d) {
         var t = Math.sqrt(d.v / (mx || 1)), a = focus && cells[d.i][2] !== focus ? 70 : 235;
-        if (S.step === 6) { var c = d.s >= .5 ? mix(LIGHT, col('lime'), Math.min(1, (d.s - .5) * 4)) : mix(LIGHT, col('green'), Math.min(1, (.5 - d.s) * 4)); return c.concat(d.v ? a : 0); }
+        if (S.step === 6) { var c = d.s >= .5 ? mix(LIGHT, col('nebeng'), Math.min(1, (d.s - .5) * 4)) : mix(LIGHT, col('gaspol'), Math.min(1, (.5 - d.s) * 4)); return c.concat(d.v ? a : 0); }
         if (S.step === 3) return mix(LIGHT, w.c, t * .35).concat(90);
         if (!w.c) return ramp(t).concat(d.v ? 90 + 165 * t : 0);
         return mix(LIGHT, w.c, .2 + .8 * t).concat(d.v ? 90 + 165 * t : 0);
@@ -168,11 +168,11 @@ body.embed .panel, body.embed .card, body.embed .time { display: none; }
       updateTriggers: { getElevation: [S.step, S.hour, S.brand, S.svc, S.metric], getFillColor: [S.step, S.hour, S.brand, S.svc, S.metric, S.area] },
       transitions: { getElevation: S.playing && S.step <= 3 ? 0 : 600 },
       onHover: function (info) { var tt = $('tt'); if (!info.object) { tt.style.display = 'none'; return; }
-        var d = info.object; tt.innerHTML = '<b>' + fmtT(d.v * SC) + '</b> ' + w.label + (S.step === 6 && d.v ? ' · Lime ' + Math.round(d.s * 100) + '%' : '') + '<span>' + cells[d.i][2] + '</span>';
+        var d = info.object; tt.innerHTML = '<b>' + fmtT(d.v * SC) + '</b> ' + w.label + (S.step === 6 && d.v ? ' · Ne-beng ' + Math.round(d.s * 100) + '%' : '') + '<span>' + cells[d.i][2] + '</span>';
         tt.style.display = 'block'; tt.style.left = info.x + 14 + 'px'; tt.style.top = info.y + 10 + 'px'; },
       onClick: function (info) { if (info.object && S.step === 6) { S.area = cells[info.object.i][2]; renderStep(); draw(); } }
     })];
-    if (S.step === 3) ['green', 'lime'].forEach(function (b) {
+    if (S.step === 3) ['gaspol', 'nebeng'].forEach(function (b) {
       out.push(new deck.TripsLayer({ id: 'trips-' + b, data: D.trips[b], getPath: function (p) { return p.map(function (q) { return [q[0], q[1]]; }); },
         getTimestamps: function (p) { return p.map(function (q) { return q[2]; }); }, getColor: col(b), widthMinPixels: 2.6, opacity: 1, getWidth: 30,
         trailLength: 80, currentTime: S.hour * 60, capRounded: true, jointRounded: true }));
@@ -196,13 +196,13 @@ body.embed .panel, body.embed .card, body.embed .time { display: none; }
       body: function () { return '<p>Each app talks to its own servers. A host lookup on the traffic says which lines used which app today, with no access to the app.</p><p class="sec">Brand</p>' + brandChips(Object.keys(D.meta.brands)); },
       card: function () { var b = S.brand, all = 30e6;
         var app = appDau(b);
-        return '<p class="kick">Funnel · ' + D.meta.brands[b].name + '</p><div class="funnel"><div style="width:100%;background:#9a9cc9">Telco DAU<b>30M</b></div><div style="width:' + Math.max(40, app / all * 100 * 4) + '%;background:' + rgb(col(b)) + '">App users<b>' + fmtT(app) + '</b></div></div><p class="note">' + Math.round(app / all * 100) + '% of people on the network used ' + D.meta.brands[b].name + ' today.</p><p class="sec">All four brands</p><div class="bars">' + Object.keys(D.meta.brands).map(function (k) { return '<span' + (k === b ? ' style="font-weight:700"' : '') + '>' + D.meta.brands[k].name.split(' ').pop() + '</span><span class="tr"><b style="width:' + appDau(k) / appDau('green') * 90 + '%;background:' + rgb(col(k)) + '"></b></span><span class="v">' + fmtT(appDau(k)) + '</span>'; }).join('') + '</div>'; } },
+        return '<p class="kick">Funnel · ' + D.meta.brands[b].name + '</p><div class="funnel"><div style="width:100%;background:#9a9cc9">Telco DAU<b>30M</b></div><div style="width:' + Math.max(40, app / all * 100 * 4) + '%;background:' + rgb(col(b)) + '">App users<b>' + fmtT(app) + '</b></div></div><p class="note">' + Math.round(app / all * 100) + '% of people on the network used ' + D.meta.brands[b].name + ' today.</p><p class="sec">All four brands</p><div class="bars">' + Object.keys(D.meta.brands).map(function (k) { return '<span' + (k === b ? ' style="font-weight:700"' : '') + '>' + D.meta.brands[k].name.split(' ').pop() + '</span><span class="tr"><b style="width:' + appDau(k) / appDau('gaspol') * 90 + '%;background:' + rgb(col(k)) + '"></b></span><span class="v">' + fmtT(appDau(k)) + '</span>'; }).join('') + '</div>'; } },
     { t: 'Sessions', h: 'From hostnames to sessions', time: true,
       body: function () { return '<p>The network never sees "a Food order". It sees <b>hostnames</b>: an app\'s API, image CDNs with random names, telemetry, and push, ads and payment hosts that every app shares.</p><p>A dictionary of known hosts misses most of the traffic. So I embedded hosts with <b>Word2Vec</b>: hosts that pop up together belong to the same app, and a burst of them is one session.</p>'; },
       card: function () { return sessCard(); } },
     { t: 'Drivers', h: 'Drivers vs customers', time: true,
       body: function () { return '<p>Drivers look different on the network: on the road all day, many short sessions, a <b>driver-partner endpoint</b>, dozens of cells. A classifier trained on a labelled panel separates them from customers.</p><p>Lines are simulated driver trips for both ride-hailing brands.</p>'; },
-      card: function () { var m = D.meta.metrics.driver; return '<p class="kick">Ride-hailing drivers today</p>' + ['green', 'lime'].map(function (b) { var dr = D.brand[b].n_drivers * SC, app = appDau(b);
+      card: function () { var m = D.meta.metrics.driver; return '<p class="kick">Ride-hailing drivers today</p>' + ['gaspol', 'nebeng'].map(function (b) { var dr = D.brand[b].n_drivers * SC, app = appDau(b);
         return '<div class="bars" style="margin-top:8px"><span>' + D.meta.brands[b].name.replace('Ride-hailing ', '') + '</span><span class="tr"><b style="width:' + (dr / app * 100 * 8) + '%;background:' + rgb(col(b)) + '"></b></span><span class="v">' + fmtT(dr) + '</span></div><div class="sub">' + (dr / app * 100).toFixed(1) + '% of ' + fmtT(app) + ' app users</div>'; }).join('') +
         '<div class="kv"><div><b>' + m.precision.toFixed(2) + '</b><span>precision</span></div><div><b>' + m.recall.toFixed(2) + '</b><span>recall</span></div></div>'; } },
     { t: 'Service', h: 'Which service?', time: false,
@@ -211,12 +211,12 @@ body.embed .panel, body.embed .card, body.embed .time { display: none; }
     { t: 'Orders', h: 'Did they order?', time: false,
       body: function () { return '<p>A third model scores every session: did it end in an order? Signals: a payment endpoint, longer and heavier sessions, a trip right after.</p><p class="sec">Brand</p>' + brandChips(Object.keys(D.meta.brands)) + '<p class="sec">Service</p>' + svcChips() + '<p class="sec">Show</p><div class="chips" id="mchips"><button type="button" data-m="act" aria-pressed="' + (S.metric === 'act') + '">Users</button><button type="button" data-m="txn" aria-pressed="' + (S.metric === 'txn') + '">Users who ordered</button></div>'; },
       card: function () { var m = D.meta.metrics.txn; return svcCard(1) + '<p class="sec">Order model, held-out panel</p><div class="kv"><div><b>' + m.auc.toFixed(2) + '</b><span>AUC</span></div><div><b>' + m.precision.toFixed(2) + ' / ' + m.recall.toFixed(2) + '</b><span>precision / recall</span></div><div><b>' + Math.round(m.true_rate * 100) + '%</b><span>sessions w/ order</span></div><div><b>' + Math.round(D.meta.metrics.txn_dau * 100) + '%</b><span>customers ordering</span></div></div><p class="note">The threshold matches the panel\'s order rate, so area totals stay unbiased.</p>'; } },
-    { t: 'Versus', h: 'Green vs Lime, area by area', time: false, cam: { zoom: 10.6, pitch: 55, bearing: -20 },
-      body: function () { return '<p>The question clients pay for: <b>how many people ordered food on each app in my area today?</b> Hex colour is Lime\'s share of food orders; height is the total.</p><p class="sec">Area <small>· or click a hex</small></p><select id="area">' + AREAS.map(function (a) { return '<option' + (a === S.area ? ' selected' : '') + '>' + a + '</option>'; }).join('') + '</select>'; },
-      card: function () { var g = areaSum(D.brand.green.svc.Food[1], S.area) * SC, l = areaSum(D.brand.lime.svc.Food[1], S.area) * SC;
-        var rows = AREAS.map(function (a) { var gg = areaSum(D.brand.green.svc.Food[1], a), ll = areaSum(D.brand.lime.svc.Food[1], a); return [a, ll / (gg + ll)]; }).sort(function (x, y) { return y[1] - x[1]; });
-        return '<p class="kick">Food · ordered today · ' + S.area + '</p><div class="vs"><div><span>Ride-hailing Green</span><div class="big" style="color:' + rgb(col('green')) + '">' + fmt(g) + '</div></div><div><span>Ride-hailing Lime</span><div class="big" style="color:' + rgb(col('lime')) + '">' + fmt(l) + '</div></div></div>' +
-          '<p class="sub">Lime share ' + Math.round(l / (g + l) * 100) + '%</p><p class="sec">Lime share of food orders, by area</p><div class="bars">' + rows.map(function (r) { return '<span' + (r[0] === S.area ? ' style="font-weight:700"' : '') + '>' + r[0].replace(' & Tangerang Selatan', ' & Tangsel') + '</span><span class="tr"><b style="width:' + r[1] * 100 + '%;background:' + rgb(r[1] >= .5 ? col('lime') : col('green')) + '"></b></span><span class="v">' + Math.round(r[1] * 100) + '%</span>'; }).join('') + '</div>'; } }
+    { t: 'Versus', h: 'Gas-pol vs Ne-beng, area by area', time: false, cam: { zoom: 10.6, pitch: 55, bearing: -20 },
+      body: function () { return '<p>The question clients pay for: <b>how many people ordered food on each app in my area today?</b> Hex colour is Ne-beng\'s share of food orders; height is the total.</p><p class="sec">Area <small>· or click a hex</small></p><select id="area">' + AREAS.map(function (a) { return '<option' + (a === S.area ? ' selected' : '') + '>' + a + '</option>'; }).join('') + '</select>'; },
+      card: function () { var g = areaSum(D.brand.gaspol.svc.Food[1], S.area) * SC, l = areaSum(D.brand.nebeng.svc.Food[1], S.area) * SC;
+        var rows = AREAS.map(function (a) { var gg = areaSum(D.brand.gaspol.svc.Food[1], a), ll = areaSum(D.brand.nebeng.svc.Food[1], a); return [a, ll / (gg + ll)]; }).sort(function (x, y) { return y[1] - x[1]; });
+        return '<p class="kick">Food · ordered today · ' + S.area + '</p><div class="vs"><div><span>Gas-pol</span><div class="big" style="color:' + rgb(col('gaspol')) + '">' + fmt(g) + '</div></div><div><span>Ne-beng</span><div class="big" style="color:' + rgb(col('nebeng')) + '">' + fmt(l) + '</div></div></div>' +
+          '<p class="sub">Ne-beng share ' + Math.round(l / (g + l) * 100) + '%</p><p class="sec">Ne-beng share of food orders, by area</p><div class="bars">' + rows.map(function (r) { return '<span' + (r[0] === S.area ? ' style="font-weight:700"' : '') + '>' + r[0].replace(' & Tangerang Selatan', ' & Tangsel') + '</span><span class="tr"><b style="width:' + r[1] * 100 + '%;background:' + rgb(r[1] >= .5 ? col('nebeng') : col('gaspol')) + '"></b></span><span class="v">' + Math.round(r[1] * 100) + '%</span>'; }).join('') + '</div>'; } }
   ];
   function hostColor(k) { return D.meta.brands[k] ? rgb(col(k)) : k === 'shared' ? '#e8e8f0' : '#4a4f6a'; }
   function sessCard() {
@@ -255,7 +255,7 @@ body.embed .panel, body.embed .card, body.embed .time { display: none; }
   function go(i) {
     if (i < 0 || i >= STEPS.length) return;
     S.step = i; var s = STEPS[i];
-    if (i >= 1 && i <= 3) { if (D.meta.brands[S.brand].kind !== 'ride') S.brand = 'green'; }
+    if (i >= 1 && i <= 3) { if (D.meta.brands[S.brand].kind !== 'ride') S.brand = 'gaspol'; }
     if (i === 4) S.svc = D.meta.services[S.brand].indexOf(S.svc) >= 0 ? S.svc : D.meta.services[S.brand][0];
     if (i === 5) S.metric = 'txn';
     [].forEach.call($('steps').children, function (b, k) { if (k === i) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current'); b.classList.toggle('done', k < i); });
